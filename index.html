@@ -1,0 +1,1123 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FallBuild · sovereign app builder</title>
+<link rel="manifest" href='data:application/manifest+json,{"name":"FallBuild","short_name":"FallBuild","start_url":"./","display":"standalone","background_color":"%230b0a0f","theme_color":"%23ff8c00","icons":[{"src":"data:image/svg+xml;utf8,<svg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 192 192%27><rect width=%27192%27 height=%27192%27 fill=%27%230b0a0f%27 rx=%2828%27/><text x=%2796%27 y=%27130%27 font-family=%27Georgia, serif%27 font-size=%27108%27 font-weight=%27700%27 text-anchor=%27middle%27 fill=%27%23ff8c00%27>◊</text></svg>","sizes":"192x192","type":"image/svg+xml"}]}'>
+<style>
+:root{
+  --void:#0b0a0f; --void-2:#13121a; --ink:#1a1922; --ink-2:#22212c;
+  --line:#2a2934; --line-soft:#1f1e28;
+  --cream:#e6e1d6; --cream-dim:#a8a395; --cream-muted:#6e6a5e;
+  --brass:#b8974a; --amber:#ff8c00; --ox:#8b1a1a;
+  --green:#4ade80; --red:#ef4444; --blue:#60a5fa; --yellow:#fbbf24;
+  --serif:Georgia,'Libre Baskerville',ui-serif,serif;
+  --sans:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --mono:'IBM Plex Mono','SF Mono',ui-monospace,Menlo,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;height:100%;background:var(--void);color:var(--cream);font-family:var(--sans);font-size:13px;overflow:hidden}
+button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
+input,select,textarea{background:var(--ink);border:1px solid var(--line);color:var(--cream);padding:5px 7px;border-radius:3px;outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--brass)}
+button{background:var(--ink);border:1px solid var(--line);color:var(--cream);padding:5px 10px;border-radius:3px;cursor:pointer}
+button:hover{background:var(--ink-2);border-color:var(--brass)}
+button.primary{background:linear-gradient(180deg,var(--brass),#9d7e3a);border-color:var(--brass);color:var(--void)}
+button.primary:hover{background:linear-gradient(180deg,var(--amber),var(--brass));color:var(--void)}
+button.ox{background:var(--ox);border-color:var(--ox);color:var(--cream)}
+.mono{font-family:var(--mono)}
+.serif{font-family:var(--serif)}
+
+/* Header */
+header{height:42px;display:flex;align-items:center;gap:10px;padding:0 12px;border-bottom:1px solid var(--line);background:var(--void-2);position:relative;z-index:10}
+.brand{display:flex;align-items:center;gap:8px;font-family:var(--serif);font-size:16px;font-weight:600}
+.brand .glyph{width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--brass),var(--amber));border-radius:4px;color:var(--void);font-size:18px}
+.brand b{color:var(--cream);letter-spacing:.5px}
+.brand span{color:var(--cream-muted);font-size:11px;font-family:var(--mono)}
+.spacer{flex:1}
+.modeswitch{display:flex;border:1px solid var(--line);border-radius:4px;overflow:hidden}
+.modeswitch button{border:none;border-radius:0;padding:4px 12px;font-size:11px;text-transform:lowercase}
+.modeswitch button.on{background:var(--brass);color:var(--void)}
+.appname{background:var(--ink);border:1px solid var(--line);padding:4px 8px;border-radius:3px;width:180px;font-size:12px}
+.menu{position:relative}
+.menu>button{font-size:12px}
+.menu-list{display:none;position:absolute;top:100%;right:0;background:var(--void-2);border:1px solid var(--line);border-radius:4px;min-width:180px;padding:4px 0;z-index:50;box-shadow:0 4px 16px rgba(0,0,0,.5)}
+.menu.open .menu-list{display:block}
+.menu-list button{display:block;width:100%;text-align:left;border:none;background:none;border-radius:0;padding:6px 12px;font-size:12px}
+.menu-list button:hover{background:var(--ink-2)}
+.menu-list hr{border:none;border-top:1px solid var(--line);margin:4px 0}
+.badge{font-family:var(--mono);font-size:10px;padding:2px 6px;border:1px solid var(--line);border-radius:3px;color:var(--cream-dim)}
+.badge.t3{color:var(--green);border-color:var(--green)}
+
+/* Workspace */
+.workspace{display:grid;grid-template-columns:200px 1fr 260px;height:calc(100% - 42px - 22px)}
+.palette{background:var(--void-2);border-right:1px solid var(--line);overflow-y:auto;padding:8px}
+.palette h4{margin:8px 4px 4px;font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--cream-muted);font-weight:600}
+.widget-tile{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--ink);border:1px solid var(--line);border-radius:4px;margin-bottom:5px;cursor:grab;user-select:none;font-size:12px}
+.widget-tile:hover{border-color:var(--brass);background:var(--ink-2)}
+.widget-tile:active{cursor:grabbing}
+.widget-tile .ico{width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;color:var(--brass);font-family:var(--mono);font-size:14px}
+.tmpl-tile{padding:8px 10px;background:var(--ink);border:1px solid var(--line);border-radius:4px;margin-bottom:5px;cursor:pointer;font-size:12px}
+.tmpl-tile:hover{border-color:var(--amber)}
+.tmpl-tile small{display:block;color:var(--cream-muted);font-size:10px;margin-top:2px}
+
+/* Canvas */
+.canvas-wrap{display:flex;flex-direction:column;background:var(--void);min-width:0}
+.page-tabs{height:32px;border-bottom:1px solid var(--line);background:var(--void-2);display:flex;align-items:center;padding:0 8px;gap:4px;overflow-x:auto}
+.page-tab{padding:5px 12px;border:1px solid var(--line);background:var(--ink);border-radius:3px 3px 0 0;font-size:11px;cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap}
+.page-tab.on{background:var(--brass);color:var(--void);border-color:var(--brass)}
+.page-tab .x{font-size:10px;opacity:.5}
+.page-tab .x:hover{opacity:1;color:var(--red)}
+.page-tab-add{padding:5px 10px;font-size:11px;background:transparent;border:1px dashed var(--line);border-radius:3px}
+.canvas{flex:1;position:relative;overflow:auto;background:
+  linear-gradient(var(--void) 0,var(--void) 100%);
+  background-color:var(--void)}
+.canvas.grid{background-image:
+  linear-gradient(var(--line-soft) 1px,transparent 1px),
+  linear-gradient(90deg,var(--line-soft) 1px,transparent 1px);
+  background-size:20px 20px}
+.page-surface{position:relative;min-width:100%;min-height:100%;padding:20px}
+.widget{position:absolute;background:var(--ink);border:1px solid var(--line);border-radius:4px;padding:10px;overflow:hidden;cursor:move}
+.widget.selected{border-color:var(--amber);box-shadow:0 0 0 1px var(--amber)}
+.widget .w-handle{position:absolute;width:10px;height:10px;background:var(--brass);right:-1px;bottom:-1px;cursor:nwse-resize;border:1px solid var(--void)}
+.widget .w-label{position:absolute;top:-18px;left:0;font-size:9px;color:var(--cream-muted);text-transform:uppercase;font-family:var(--mono);letter-spacing:1px;display:none}
+.widget.selected .w-label{display:block}
+.widget h1,.widget h2,.widget h3{margin:0 0 6px;font-family:var(--serif);color:var(--cream)}
+.widget p{margin:0 0 6px}
+.widget table{width:100%;border-collapse:collapse;font-size:11px}
+.widget th,.widget td{padding:4px 6px;border-bottom:1px solid var(--line);text-align:left}
+.widget th{color:var(--cream-muted);text-transform:uppercase;font-size:9px;letter-spacing:1px}
+.widget .field-row{display:flex;flex-direction:column;gap:3px;margin-bottom:6px}
+.widget .field-row label{font-size:10px;text-transform:uppercase;color:var(--cream-muted);letter-spacing:1px}
+.widget .field-row input{padding:4px 6px;font-size:11px}
+.widget .w-btn{background:var(--brass);color:var(--void);border:none;padding:6px 12px;border-radius:3px;cursor:pointer;font-size:12px;font-weight:600}
+.widget canvas{display:block;width:100%;height:100%}
+
+/* Properties panel */
+.props{background:var(--void-2);border-left:1px solid var(--line);overflow-y:auto;padding:10px}
+.props h4{margin:0 0 8px;font-family:var(--serif);font-size:13px;color:var(--cream);border-bottom:1px solid var(--line);padding-bottom:6px}
+.props .row{display:flex;flex-direction:column;gap:4px;margin-bottom:8px}
+.props .row label{font-size:10px;text-transform:uppercase;color:var(--cream-muted);letter-spacing:1px}
+.props .row input,.props .row select,.props .row textarea{width:100%}
+.props .row textarea{min-height:60px;font-family:var(--mono);font-size:11px}
+.props .row.inline{flex-direction:row;align-items:center;gap:6px}
+.props .row.inline label{flex:1}
+.props .empty{color:var(--cream-muted);font-style:italic;padding:20px 10px;text-align:center;font-size:11px}
+.props .danger{background:var(--ox);color:var(--cream);width:100%;padding:6px;margin-top:8px}
+
+/* Status bar */
+footer{height:22px;border-top:1px solid var(--line);background:var(--void-2);display:flex;align-items:center;padding:0 10px;gap:12px;font-family:var(--mono);font-size:10px;color:var(--cream-muted)}
+footer .sep{color:var(--line)}
+footer .ok{color:var(--green)}
+
+/* Palette modal (Ω) */
+.palette-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;align-items:flex-start;justify-content:center;padding-top:80px}
+.palette-bg.open{display:flex}
+.palette-bg .palette{width:560px;max-width:90vw;background:var(--void-2);border:1px solid var(--brass);border-radius:6px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.8)}
+.palette-hd{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line)}
+.palette-hd .glyph{font-family:var(--serif);font-size:18px;color:var(--amber)}
+.palette-hd input{flex:1;background:none;border:none;font-size:14px;outline:none;color:var(--cream)}
+.palette-bd{max-height:380px;overflow-y:auto;padding:6px}
+.palette-bd .opt{padding:8px 12px;border-radius:4px;cursor:pointer;font-size:12px;display:flex;align-items:center;gap:8px}
+.palette-bd .opt:hover,.palette-bd .opt.on{background:var(--ink-2)}
+.palette-bd .opt small{color:var(--cream-muted);margin-left:auto;font-family:var(--mono);font-size:10px}
+
+/* Settings modal */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:150;align-items:center;justify-content:center}
+.modal-bg.open{display:flex}
+.modal{background:var(--void-2);border:1px solid var(--line);border-radius:6px;width:520px;max-width:90vw;max-height:80vh;overflow-y:auto;padding:18px}
+.modal h3{font-family:var(--serif);margin:0 0 12px;font-size:16px}
+.modal .row{display:flex;flex-direction:column;gap:4px;margin-bottom:10px}
+.modal .row label{font-size:10px;text-transform:uppercase;color:var(--cream-muted);letter-spacing:1px}
+.modal .row input,.modal .row select,.modal .row textarea{width:100%}
+.modal .row textarea{min-height:80px;font-family:var(--mono);font-size:11px}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:12px}
+
+/* Preview mode */
+body.preview .palette,body.preview .props,body.preview .page-tabs .page-tab .x,body.preview .page-tab-add{display:none}
+body.preview .workspace{grid-template-columns:1fr}
+body.preview .canvas{background:var(--void) !important;background-image:none !important}
+body.preview .widget{cursor:default;border-color:transparent;background:transparent;padding:0}
+body.preview .widget .w-handle,body.preview .widget .w-label{display:none}
+body.preview .widget.selected{box-shadow:none}
+
+/* Mobile */
+@media (max-width:760px){
+  .workspace{grid-template-columns:120px 1fr 0}
+  .props{position:absolute;right:0;top:42px;bottom:22px;width:240px;transform:translateX(100%);transition:transform .2s;z-index:20}
+  .props.open{transform:translateX(0)}
+  .appname{width:100px}
+}
+
+/* Data list (recent apps) */
+.app-list{list-style:none;margin:0;padding:0}
+.app-list li{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border:1px solid var(--line);border-radius:3px;margin-bottom:4px;font-size:12px;cursor:pointer}
+.app-list li:hover{border-color:var(--brass);background:var(--ink-2)}
+.app-list li small{color:var(--cream-muted);font-family:var(--mono);font-size:10px}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand"><span class="glyph">◊</span><b>FallBuild</b><span>· prime 547</span></div>
+  <div class="modeswitch">
+    <button id="btnEdit" class="on" onclick="setMode('edit')">edit</button>
+    <button id="btnPreview" onclick="setMode('preview')">preview</button>
+  </div>
+  <input class="appname" id="appName" placeholder="untitled app">
+  <div class="menu" id="fileMenu">
+    <button onclick="toggleMenu('fileMenu')">file ▾</button>
+    <div class="menu-list">
+      <button onclick="newApp();closeMenus()">new app</button>
+      <button onclick="openOpen();closeMenus()">open…</button>
+      <button onclick="saveApp();closeMenus()">save</button>
+      <hr>
+      <button onclick="exportJSON();closeMenus()">export json</button>
+      <button onclick="importJSON();closeMenus()">import json</button>
+      <hr>
+      <button onclick="exportStandalone();closeMenus()">export standalone html</button>
+    </div>
+  </div>
+  <button onclick="openPalette()">autopilot Ω</button>
+  <span class="badge" id="tierBadge">T0</span>
+  <button onclick="openSettings()">settings</button>
+  <label class="badge" style="cursor:pointer"><input type="checkbox" id="snapGrid" checked style="margin-right:4px;vertical-align:middle"> grid</label>
+</header>
+
+<div class="workspace">
+  <aside class="palette" id="leftPalette">
+    <h4>widgets</h4>
+    <div id="widgetTiles"></div>
+    <h4>templates</h4>
+    <div id="tmplTiles"></div>
+  </aside>
+  <main class="canvas-wrap">
+    <div class="page-tabs" id="pageTabs"></div>
+    <div class="canvas grid" id="canvas">
+      <div class="page-surface" id="pageSurface"></div>
+    </div>
+  </main>
+  <aside class="props" id="propsPanel">
+    <div class="empty">select a widget to edit its properties · or drag one from the left palette</div>
+  </aside>
+</div>
+
+<footer>
+  <span>FallBuild</span><span class="sep">·</span>
+  <span id="appStat">app: untitled</span><span class="sep">·</span>
+  <span id="pageStat">page: -</span><span class="sep">·</span>
+  <span id="wStat">widgets: 0</span><span class="sep">·</span>
+  <span class="ok">◊·κ=1</span>
+  <span style="flex:1"></span>
+  <span id="saveStat">unsaved</span>
+</footer>
+
+<!-- Ω palette modal -->
+<div class="palette-bg" id="palette" onclick="if(event.target.id==='palette')closePalette()">
+  <div class="palette">
+    <div class="palette-hd">
+      <span class="glyph">Ω</span>
+      <input id="pInput" placeholder="template · or describe an app">
+      <span class="badge" id="pTier">T0</span>
+    </div>
+    <div class="palette-bd" id="pBody"></div>
+  </div>
+</div>
+
+<!-- Settings -->
+<div class="modal-bg" id="settingsModal" onclick="if(event.target.id==='settingsModal')closeSettings()">
+  <div class="modal">
+    <h3>settings</h3>
+    <div class="row"><label>Anthropic key (T3)</label><input id="sAnthropic" placeholder="sk-ant-..."></div>
+    <div class="row"><label>OpenAI key (T3)</label><input id="sOpenAI" placeholder="sk-..."></div>
+    <div class="row"><label>Gemini key (T3)</label><input id="sGemini" placeholder="..."></div>
+    <div class="row"><label>OpenRouter key (T3)</label><input id="sOpenRouter" placeholder="sk-or-..."></div>
+    <div class="modal-actions">
+      <button onclick="closeSettings()">cancel</button>
+      <button class="primary" onclick="saveSettings()">save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Open modal -->
+<div class="modal-bg" id="openModal" onclick="if(event.target.id==='openModal')closeOpen()">
+  <div class="modal">
+    <h3>open app</h3>
+    <ul class="app-list" id="appList"><li>loading…</li></ul>
+    <div class="modal-actions"><button onclick="closeOpen()">close</button></div>
+  </div>
+</div>
+
+<!-- Data sources modal -->
+<div class="modal-bg" id="dsModal" onclick="if(event.target.id==='dsModal')closeDS()">
+  <div class="modal">
+    <h3>data sources</h3>
+    <div id="dsList"></div>
+    <hr style="border:none;border-top:1px solid var(--line);margin:12px 0">
+    <h4 style="font-family:var(--serif);margin:0 0 8px">add data source</h4>
+    <div class="row"><label>name</label><input id="dsName" placeholder="customers"></div>
+    <div class="row"><label>type</label>
+      <select id="dsType" onchange="dsTypeChange()">
+        <option value="demo">demo data</option>
+        <option value="inline">inline json</option>
+        <option value="fallbase">fallbase</option>
+      </select>
+    </div>
+    <div class="row" id="dsDemoRow"><label>demo set</label>
+      <select id="dsDemo">
+        <option value="customers">customers</option>
+        <option value="orders">orders</option>
+        <option value="products">products</option>
+      </select>
+    </div>
+    <div class="row" id="dsInlineRow" style="display:none"><label>json array</label>
+      <textarea id="dsInline" placeholder='[{"id":1,"name":"alice"},{"id":2,"name":"bob"}]'></textarea>
+    </div>
+    <div class="row" id="dsFallbaseRow" style="display:none"><label>fallbase table</label>
+      <input id="dsFallbase" placeholder="customers">
+    </div>
+    <div class="modal-actions">
+      <button onclick="closeDS()">close</button>
+      <button class="primary" onclick="addDS()">add</button>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+const PRIME=547, VERSION='1.0.0', TOOLNAME='fallbuild';
+
+// ---------- State ----------
+const state={
+  app:null,
+  pageIdx:0,
+  selectedId:null,
+  mode:'edit',
+  settings:{anthropicKey:'',openaiKey:'',geminiKey:'',openrouterKey:''},
+  dirty:false
+};
+
+const DEMO_DATA={
+  customers:[
+    {id:1,name:'Alice Chen',email:'alice@acme.io',company:'Acme',tier:'gold',value:12400},
+    {id:2,name:'Ben Ortiz',email:'ben@globex.co',company:'Globex',tier:'silver',value:3200},
+    {id:3,name:'Cara Singh',email:'cara@initech.net',company:'Initech',tier:'gold',value:18900},
+    {id:4,name:'Dan Wu',email:'dan@umbrella.org',company:'Umbrella',tier:'bronze',value:540},
+    {id:5,name:'Eva Park',email:'eva@stark.com',company:'Stark',tier:'silver',value:7100}
+  ],
+  orders:[
+    {id:101,customer:'Acme',total:1200,status:'paid',date:'2026-05-12'},
+    {id:102,customer:'Globex',total:340,status:'pending',date:'2026-05-14'},
+    {id:103,customer:'Initech',total:2890,status:'paid',date:'2026-05-15'},
+    {id:104,customer:'Stark',total:540,status:'refunded',date:'2026-05-18'},
+    {id:105,customer:'Acme',total:780,status:'paid',date:'2026-05-20'}
+  ],
+  products:[
+    {id:'p1',name:'Widget A',price:29,stock:120,category:'core'},
+    {id:'p2',name:'Widget B',price:49,stock:34,category:'pro'},
+    {id:'p3',name:'Service plan',price:199,stock:9999,category:'service'},
+    {id:'p4',name:'Add-on pack',price:12,stock:540,category:'core'}
+  ]
+};
+
+// ---------- Widget definitions ----------
+const WIDGETS={
+  text:{label:'Text',icon:'T',defaultProps:{content:'# Heading\nParagraph text here.'},defaultSize:{w:280,h:80}},
+  form:{label:'Form',icon:'☷',defaultProps:{dataSource:'',title:'New record',submitLabel:'Save'},defaultSize:{w:280,h:240}},
+  table:{label:'Table',icon:'⊞',defaultProps:{dataSource:'',columns:'',sortable:true,rowAction:'none',rowTarget:''},defaultSize:{w:480,h:240}},
+  chart:{label:'Chart',icon:'◧',defaultProps:{dataSource:'',chartType:'bar',xField:'',yField:''},defaultSize:{w:360,h:220}},
+  button:{label:'Button',icon:'▣',defaultProps:{label:'Click me',action:'navigate',target:'',code:''},defaultSize:{w:140,h:40}},
+  image:{label:'Image',icon:'◇',defaultProps:{src:'',alt:''},defaultSize:{w:200,h:160}},
+  container:{label:'Container',icon:'▢',defaultProps:{layout:'flex',bg:''},defaultSize:{w:320,h:200}},
+  filter:{label:'Filter',icon:'⏷',defaultProps:{placeholder:'search…',target:''},defaultSize:{w:240,h:48}}
+};
+
+// ---------- IndexedDB ----------
+let db=null;
+function openDB(){return new Promise((res,rej)=>{
+  const r=indexedDB.open('fallbuild',1);
+  r.onupgradeneeded=e=>{const d=e.target.result;if(!d.objectStoreNames.contains('apps'))d.createObjectStore('apps',{keyPath:'id'});if(!d.objectStoreNames.contains('kv'))d.createObjectStore('kv',{keyPath:'k'})};
+  r.onsuccess=e=>{db=e.target.result;res(db)};
+  r.onerror=()=>rej(r.error);
+});}
+function dbPut(store,obj){return new Promise((res,rej)=>{const t=db.transaction(store,'readwrite');t.objectStore(store).put(obj);t.oncomplete=()=>res();t.onerror=()=>rej(t.error)})}
+function dbGet(store,key){return new Promise((res)=>{const t=db.transaction(store,'readonly');const r=t.objectStore(store).get(key);r.onsuccess=()=>res(r.result);r.onerror=()=>res(null)})}
+function dbAll(store){return new Promise((res)=>{const t=db.transaction(store,'readonly');const r=t.objectStore(store).getAll();r.onsuccess=()=>res(r.result||[]);r.onerror=()=>res([])})}
+function dbDel(store,key){return new Promise((res)=>{const t=db.transaction(store,'readwrite');t.objectStore(store).delete(key);t.oncomplete=()=>res();t.onerror=()=>res()})}
+
+// ---------- App model ----------
+function newApp(){
+  state.app={
+    id:'app_'+Date.now().toString(36),
+    name:'untitled app',
+    pages:[{id:'p_'+Date.now().toString(36),name:'home',widgets:[]}],
+    dataSources:[],
+    createdAt:Date.now(),
+    updatedAt:Date.now()
+  };
+  state.pageIdx=0;
+  state.selectedId=null;
+  document.getElementById('appName').value=state.app.name;
+  renderAll();
+  markDirty();
+}
+
+function markDirty(){state.dirty=true;document.getElementById('saveStat').textContent='unsaved';scheduleAutosave()}
+function markSaved(){state.dirty=false;document.getElementById('saveStat').textContent='saved · '+new Date().toLocaleTimeString()}
+
+let autosaveT=null;
+function scheduleAutosave(){clearTimeout(autosaveT);autosaveT=setTimeout(saveApp,1200)}
+
+async function saveApp(){
+  if(!state.app)return;
+  state.app.updatedAt=Date.now();
+  state.app.name=document.getElementById('appName').value||'untitled app';
+  await dbPut('apps',state.app);
+  await dbPut('kv',{k:'lastAppId',v:state.app.id});
+  markSaved();
+  fmSignal('app-saved',{id:state.app.id,name:state.app.name});
+}
+
+async function loadLast(){
+  const last=await dbGet('kv','lastAppId');
+  if(last&&last.v){
+    const a=await dbGet('apps',last.v);
+    if(a){state.app=a;state.pageIdx=0;document.getElementById('appName').value=a.name;renderAll();markSaved();return}
+  }
+  newApp();
+}
+
+// ---------- Rendering ----------
+function renderAll(){renderPageTabs();renderPage();renderProps();renderTemplates();renderWidgetTiles();updateStat()}
+function updateStat(){
+  if(!state.app)return;
+  document.getElementById('appStat').textContent='app: '+state.app.name;
+  const p=state.app.pages[state.pageIdx];
+  document.getElementById('pageStat').textContent='page: '+(p?p.name:'-');
+  document.getElementById('wStat').textContent='widgets: '+(p?p.widgets.length:0);
+}
+
+function renderWidgetTiles(){
+  const c=document.getElementById('widgetTiles');c.innerHTML='';
+  for(const k in WIDGETS){
+    const w=WIDGETS[k];
+    const t=document.createElement('div');
+    t.className='widget-tile';t.draggable=true;t.dataset.type=k;
+    t.innerHTML=`<span class="ico">${w.icon}</span>${w.label}`;
+    t.addEventListener('dragstart',e=>{e.dataTransfer.setData('text/widget-type',k);e.dataTransfer.effectAllowed='copy'});
+    c.appendChild(t);
+  }
+}
+
+function renderTemplates(){
+  const tpls=['CRUD app','Dashboard','Lead capture','Pricing calculator','Internal tool'];
+  const c=document.getElementById('tmplTiles');c.innerHTML='';
+  for(const name of tpls){
+    const d=document.createElement('div');
+    d.className='tmpl-tile';
+    d.innerHTML=name+'<small>tap to apply</small>';
+    d.onclick=()=>applyTemplate(name);
+    c.appendChild(d);
+  }
+  const ds=document.createElement('div');
+  ds.className='tmpl-tile';ds.style.borderColor='var(--brass)';
+  ds.innerHTML='Data sources…<small>add demo / inline / fallbase</small>';
+  ds.onclick=openDS;
+  c.appendChild(ds);
+}
+
+function renderPageTabs(){
+  const c=document.getElementById('pageTabs');c.innerHTML='';
+  state.app.pages.forEach((p,i)=>{
+    const t=document.createElement('div');
+    t.className='page-tab'+(i===state.pageIdx?' on':'');
+    t.innerHTML=`<span>${esc(p.name)}</span><span class="x" data-i="${i}">×</span>`;
+    t.onclick=e=>{
+      if(e.target.classList.contains('x')){
+        if(state.app.pages.length>1){state.app.pages.splice(i,1);if(state.pageIdx>=state.app.pages.length)state.pageIdx=state.app.pages.length-1;markDirty();renderAll()}
+      } else {state.pageIdx=i;state.selectedId=null;renderAll()}
+    };
+    t.ondblclick=()=>{const n=prompt('page name',p.name);if(n){p.name=n;markDirty();renderAll()}};
+    c.appendChild(t);
+  });
+  const add=document.createElement('button');
+  add.className='page-tab-add';add.textContent='+ page';
+  add.onclick=()=>{
+    const name=prompt('page name','page '+(state.app.pages.length+1));
+    if(name){state.app.pages.push({id:'p_'+Date.now().toString(36),name,widgets:[]});state.pageIdx=state.app.pages.length-1;markDirty();renderAll()}
+  };
+  c.appendChild(add);
+}
+
+function renderPage(){
+  const s=document.getElementById('pageSurface');s.innerHTML='';
+  const p=state.app.pages[state.pageIdx];if(!p)return;
+  p.widgets.forEach(w=>s.appendChild(renderWidget(w)));
+}
+
+function renderWidget(w){
+  const el=document.createElement('div');
+  el.className='widget'+(state.selectedId===w.id?' selected':'');
+  el.style.left=w.x+'px';el.style.top=w.y+'px';el.style.width=w.w+'px';el.style.height=w.h+'px';
+  el.dataset.id=w.id;
+  el.innerHTML=`<div class="w-label">${WIDGETS[w.type].label}</div>`+renderWidgetBody(w);
+  if(state.mode==='edit'){
+    const handle=document.createElement('div');handle.className='w-handle';el.appendChild(handle);
+    el.onclick=e=>{e.stopPropagation();state.selectedId=w.id;renderAll()};
+    enableDrag(el,w,handle);
+  } else {
+    bindRuntime(el,w);
+  }
+  if(w.type==='chart')setTimeout(()=>drawChart(el,w),0);
+  return el;
+}
+
+function renderWidgetBody(w){
+  const p=w.props||{};
+  if(w.type==='text')return mdToHtml(p.content||'');
+  if(w.type==='form'){
+    const rows=p.dataSource?dataSourceFields(p.dataSource):['field1','field2'];
+    return `<div style="font-weight:600;margin-bottom:6px;font-family:var(--serif)">${esc(p.title||'Form')}</div>`+
+      rows.map(f=>`<div class="field-row"><label>${esc(f)}</label><input data-field="${esc(f)}" type="text"></div>`).join('')+
+      `<button class="w-btn" data-act="submit">${esc(p.submitLabel||'Save')}</button>`;
+  }
+  if(w.type==='table'){
+    const rows=getDSData(p.dataSource);
+    if(!rows.length)return `<div style="color:var(--cream-muted);font-size:11px">bind a data source in the right panel</div>`;
+    const cols=(p.columns||'').split(',').map(s=>s.trim()).filter(Boolean);
+    const keys=cols.length?cols:Object.keys(rows[0]);
+    let h='<table><thead><tr>'+keys.map(k=>`<th>${esc(k)}</th>`).join('')+'</tr></thead><tbody>';
+    for(const r of rows.slice(0,20))h+='<tr data-row=\''+esc(JSON.stringify(r))+'\'>'+keys.map(k=>`<td>${esc(r[k]??'')}</td>`).join('')+'</tr>';
+    h+='</tbody></table>';
+    return h;
+  }
+  if(w.type==='chart')return `<canvas style="width:100%;height:100%"></canvas>`;
+  if(w.type==='button')return `<button class="w-btn" style="width:100%;height:100%">${esc(p.label||'Button')}</button>`;
+  if(w.type==='image'){
+    if(p.src)return `<img src="${p.src}" alt="${esc(p.alt||'')}" style="width:100%;height:100%;object-fit:cover">`;
+    return `<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--cream-muted);font-size:11px;border:1px dashed var(--line)">image — set src in props</div>`;
+  }
+  if(w.type==='container')return `<div style="display:${p.layout==='grid'?'grid':'flex'};gap:8px;width:100%;height:100%;${p.bg?'background:'+esc(p.bg)+';':''}"></div>`;
+  if(w.type==='filter')return `<input data-act="filter" placeholder="${esc(p.placeholder||'search')}" style="width:100%">`;
+  return '';
+}
+
+function dataSourceFields(name){
+  const rows=getDSData(name);
+  return rows.length?Object.keys(rows[0]).filter(k=>k!=='id'):[];
+}
+
+function getDSData(name){
+  if(!state.app||!name)return [];
+  const ds=state.app.dataSources.find(d=>d.name===name);
+  if(!ds)return [];
+  if(ds.type==='demo')return DEMO_DATA[ds.demo]||[];
+  if(ds.type==='inline'){try{return JSON.parse(ds.json||'[]')}catch(e){return[]}}
+  if(ds.type==='fallbase')return ds.cache||[];
+  return [];
+}
+
+// ---------- Markdown (tiny subset) ----------
+function mdToHtml(s){
+  s=esc(s);
+  s=s.replace(/^### (.+)$/gm,'<h3>$1</h3>');
+  s=s.replace(/^## (.+)$/gm,'<h2>$1</h2>');
+  s=s.replace(/^# (.+)$/gm,'<h1>$1</h1>');
+  s=s.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
+  s=s.replace(/\*(.+?)\*/g,'<em>$1</em>');
+  s=s.replace(/`(.+?)`/g,'<code>$1</code>');
+  s=s.split(/\n\n+/).map(p=>/^<h\d/.test(p)?p:'<p>'+p.replace(/\n/g,'<br>')+'</p>').join('');
+  return s;
+}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c])}
+
+// ---------- Chart drawing (canvas, no library) ----------
+function drawChart(el,w){
+  const cv=el.querySelector('canvas');if(!cv)return;
+  const rows=getDSData(w.props.dataSource);if(!rows.length){const ctx=cv.getContext('2d');ctx.fillStyle='#a8a395';ctx.font='11px sans-serif';ctx.fillText('bind a data source',10,20);return}
+  const xF=w.props.xField||Object.keys(rows[0])[0];
+  const yF=w.props.yField||Object.keys(rows[0]).find(k=>typeof rows[0][k]==='number')||Object.keys(rows[0])[1];
+  const dpr=window.devicePixelRatio||1;
+  const W=cv.clientWidth,H=cv.clientHeight;
+  cv.width=W*dpr;cv.height=H*dpr;
+  const ctx=cv.getContext('2d');ctx.scale(dpr,dpr);
+  ctx.clearRect(0,0,W,H);
+  const data=rows.map(r=>({x:String(r[xF]),y:Number(r[yF])||0}));
+  const max=Math.max(...data.map(d=>d.y),1);
+  const pad=24,cw=W-pad*2,ch=H-pad*2;
+  ctx.strokeStyle='#2a2934';ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(pad,pad);ctx.lineTo(pad,H-pad);ctx.lineTo(W-pad,H-pad);ctx.stroke();
+  if(w.props.chartType==='bar'){
+    const bw=cw/data.length*.7,gap=cw/data.length*.3;
+    data.forEach((d,i)=>{
+      const x=pad+i*(bw+gap)+gap/2,bh=d.y/max*ch,y=H-pad-bh;
+      ctx.fillStyle='#b8974a';ctx.fillRect(x,y,bw,bh);
+      ctx.fillStyle='#a8a395';ctx.font='9px sans-serif';ctx.textAlign='center';
+      ctx.fillText(d.x.slice(0,8),x+bw/2,H-pad+10);
+    });
+  } else if(w.props.chartType==='line'){
+    ctx.strokeStyle='#ff8c00';ctx.lineWidth=2;ctx.beginPath();
+    data.forEach((d,i)=>{const x=pad+i*(cw/(data.length-1||1)),y=H-pad-d.y/max*ch;if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y)});
+    ctx.stroke();
+    ctx.fillStyle='#ff8c00';data.forEach((d,i)=>{const x=pad+i*(cw/(data.length-1||1)),y=H-pad-d.y/max*ch;ctx.beginPath();ctx.arc(x,y,3,0,Math.PI*2);ctx.fill()});
+  } else if(w.props.chartType==='pie'){
+    const total=data.reduce((a,d)=>a+d.y,0)||1;
+    const cx=W/2,cy=H/2,r=Math.min(W,H)/2-pad;
+    let a=-Math.PI/2;
+    const cols=['#b8974a','#ff8c00','#8b1a1a','#4ade80','#60a5fa','#fbbf24','#a8a395'];
+    data.forEach((d,i)=>{
+      const a2=a+d.y/total*Math.PI*2;
+      ctx.fillStyle=cols[i%cols.length];
+      ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,r,a,a2);ctx.closePath();ctx.fill();
+      a=a2;
+    });
+  }
+}
+
+// ---------- Drag (canvas widget drag + resize) ----------
+function enableDrag(el,w,handle){
+  let mode=null,sx=0,sy=0,sw=0,sh=0,ox=0,oy=0;
+  el.addEventListener('mousedown',e=>{
+    if(e.target.closest('button')||e.target.closest('input'))return;
+    if(e.target===handle){mode='resize'}else{mode='move'}
+    sx=e.clientX;sy=e.clientY;sw=w.w;sh=w.h;ox=w.x;oy=w.y;
+    e.preventDefault();
+    const mv=ev=>{
+      const dx=ev.clientX-sx,dy=ev.clientY-sy;
+      const snap=document.getElementById('snapGrid').checked?20:1;
+      if(mode==='move'){w.x=Math.max(0,Math.round((ox+dx)/snap)*snap);w.y=Math.max(0,Math.round((oy+dy)/snap)*snap);el.style.left=w.x+'px';el.style.top=w.y+'px'}
+      else{w.w=Math.max(60,Math.round((sw+dx)/snap)*snap);w.h=Math.max(40,Math.round((sh+dy)/snap)*snap);el.style.width=w.w+'px';el.style.height=w.h+'px';if(w.type==='chart')drawChart(el,w)}
+    };
+    const up=()=>{document.removeEventListener('mousemove',mv);document.removeEventListener('mouseup',up);markDirty()};
+    document.addEventListener('mousemove',mv);document.addEventListener('mouseup',up);
+  });
+}
+
+// Canvas drop target (palette → canvas)
+const canvas=document.getElementById('canvas');
+canvas.addEventListener('dragover',e=>{e.preventDefault();e.dataTransfer.dropEffect='copy'});
+canvas.addEventListener('drop',e=>{
+  e.preventDefault();
+  const t=e.dataTransfer.getData('text/widget-type');if(!t)return;
+  const r=canvas.getBoundingClientRect();
+  const wd=WIDGETS[t];
+  const w={id:'w_'+Date.now().toString(36)+Math.random().toString(36).slice(2,5),type:t,x:Math.max(0,e.clientX-r.left+canvas.scrollLeft-wd.defaultSize.w/2),y:Math.max(0,e.clientY-r.top+canvas.scrollTop-wd.defaultSize.h/2),w:wd.defaultSize.w,h:wd.defaultSize.h,props:JSON.parse(JSON.stringify(wd.defaultProps))};
+  state.app.pages[state.pageIdx].widgets.push(w);
+  state.selectedId=w.id;markDirty();renderAll();
+});
+canvas.addEventListener('click',e=>{if(e.target===canvas||e.target.id==='pageSurface'){state.selectedId=null;renderAll()}});
+
+// ---------- Properties ----------
+function renderProps(){
+  const c=document.getElementById('propsPanel');
+  if(!state.selectedId){c.innerHTML='<div class="empty">select a widget to edit its properties · or drag one from the left palette</div>';return}
+  const p=state.app.pages[state.pageIdx];
+  const w=p.widgets.find(x=>x.id===state.selectedId);if(!w){c.innerHTML='<div class="empty">no widget</div>';return}
+  let h=`<h4>${WIDGETS[w.type].label} · <span class="mono" style="font-size:10px;color:var(--cream-muted)">${esc(w.id)}</span></h4>`;
+  h+=propRow('x',`<input type="number" value="${w.x}" onchange="upd('x',+this.value)">`);
+  h+=propRow('y',`<input type="number" value="${w.y}" onchange="upd('y',+this.value)">`);
+  h+=propRow('width',`<input type="number" value="${w.w}" onchange="upd('w',+this.value)">`);
+  h+=propRow('height',`<input type="number" value="${w.h}" onchange="upd('h',+this.value)">`);
+  const pp=w.props;
+  const dsOpts=`<option value="">— none —</option>`+state.app.dataSources.map(d=>`<option value="${esc(d.name)}" ${pp.dataSource===d.name?'selected':''}>${esc(d.name)}</option>`).join('');
+  if(w.type==='text')h+=propRow('content (markdown)',`<textarea onchange="updP('content',this.value)">${esc(pp.content||'')}</textarea>`);
+  if(w.type==='form'){
+    h+=propRow('title',`<input value="${esc(pp.title||'')}" onchange="updP('title',this.value)">`);
+    h+=propRow('data source',`<select onchange="updP('dataSource',this.value)">${dsOpts}</select>`);
+    h+=propRow('submit label',`<input value="${esc(pp.submitLabel||'')}" onchange="updP('submitLabel',this.value)">`);
+  }
+  if(w.type==='table'){
+    h+=propRow('data source',`<select onchange="updP('dataSource',this.value)">${dsOpts}</select>`);
+    h+=propRow('columns (csv, blank=all)',`<input value="${esc(pp.columns||'')}" onchange="updP('columns',this.value)">`);
+    h+=propRow('sortable',`<input type="checkbox" ${pp.sortable?'checked':''} onchange="updP('sortable',this.checked)">`,true);
+    h+=propRow('row click action',`<select onchange="updP('rowAction',this.value)">
+      <option value="none" ${pp.rowAction==='none'?'selected':''}>none</option>
+      <option value="navigate" ${pp.rowAction==='navigate'?'selected':''}>navigate page</option>
+      <option value="delete" ${pp.rowAction==='delete'?'selected':''}>delete row</option>
+    </select>`);
+    h+=propRow('row target (page)',`<input value="${esc(pp.rowTarget||'')}" onchange="updP('rowTarget',this.value)">`);
+  }
+  if(w.type==='chart'){
+    h+=propRow('data source',`<select onchange="updP('dataSource',this.value)">${dsOpts}</select>`);
+    h+=propRow('type',`<select onchange="updP('chartType',this.value)"><option ${pp.chartType==='bar'?'selected':''}>bar</option><option ${pp.chartType==='line'?'selected':''}>line</option><option ${pp.chartType==='pie'?'selected':''}>pie</option></select>`);
+    h+=propRow('x field',`<input value="${esc(pp.xField||'')}" onchange="updP('xField',this.value)">`);
+    h+=propRow('y field',`<input value="${esc(pp.yField||'')}" onchange="updP('yField',this.value)">`);
+  }
+  if(w.type==='button'){
+    h+=propRow('label',`<input value="${esc(pp.label||'')}" onchange="updP('label',this.value)">`);
+    h+=propRow('action',`<select onchange="updP('action',this.value)">
+      <option value="navigate" ${pp.action==='navigate'?'selected':''}>navigate page</option>
+      <option value="submit" ${pp.action==='submit'?'selected':''}>submit form</option>
+      <option value="delete" ${pp.action==='delete'?'selected':''}>delete row</option>
+      <option value="custom" ${pp.action==='custom'?'selected':''}>custom js</option>
+    </select>`);
+    h+=propRow('target (page or selector)',`<input value="${esc(pp.target||'')}" onchange="updP('target',this.value)">`);
+    if(pp.action==='custom')h+=propRow('js code',`<textarea onchange="updP('code',this.value)">${esc(pp.code||'')}</textarea>`);
+  }
+  if(w.type==='image'){
+    h+=propRow('upload',`<input type="file" accept="image/*" onchange="uploadImg(this)">`);
+    h+=propRow('src',`<input value="${esc(pp.src||'')}" onchange="updP('src',this.value)">`);
+    h+=propRow('alt',`<input value="${esc(pp.alt||'')}" onchange="updP('alt',this.value)">`);
+  }
+  if(w.type==='container'){
+    h+=propRow('layout',`<select onchange="updP('layout',this.value)"><option ${pp.layout==='flex'?'selected':''}>flex</option><option ${pp.layout==='grid'?'selected':''}>grid</option></select>`);
+    h+=propRow('background',`<input value="${esc(pp.bg||'')}" onchange="updP('bg',this.value)" placeholder="#1a1922">`);
+  }
+  if(w.type==='filter'){
+    h+=propRow('placeholder',`<input value="${esc(pp.placeholder||'')}" onchange="updP('placeholder',this.value)">`);
+    h+=propRow('target table id',`<input value="${esc(pp.target||'')}" onchange="updP('target',this.value)">`);
+  }
+  h+=`<button class="danger" onclick="delWidget()">delete widget</button>`;
+  c.innerHTML=h;
+}
+function propRow(label,html,inline){return `<div class="row${inline?' inline':''}"><label>${label}</label>${html}</div>`}
+function curW(){const p=state.app.pages[state.pageIdx];return p.widgets.find(x=>x.id===state.selectedId)}
+function upd(k,v){const w=curW();if(!w)return;w[k]=v;markDirty();renderPage();renderProps()}
+function updP(k,v){const w=curW();if(!w)return;w.props[k]=v;markDirty();renderPage();renderProps()}
+function delWidget(){const p=state.app.pages[state.pageIdx];p.widgets=p.widgets.filter(w=>w.id!==state.selectedId);state.selectedId=null;markDirty();renderAll()}
+function uploadImg(inp){const f=inp.files[0];if(!f)return;const r=new FileReader();r.onload=e=>{updP('src',e.target.result)};r.readAsDataURL(f)}
+
+// ---------- Mode ----------
+function setMode(m){
+  state.mode=m;
+  document.getElementById('btnEdit').classList.toggle('on',m==='edit');
+  document.getElementById('btnPreview').classList.toggle('on',m==='preview');
+  document.body.classList.toggle('preview',m==='preview');
+  renderAll();
+}
+
+// ---------- Runtime binding (preview mode) ----------
+function bindRuntime(el,w){
+  const p=w.props;
+  if(w.type==='button'){
+    el.querySelector('button').onclick=()=>runtimeAction(w);
+  }
+  if(w.type==='form'){
+    el.querySelector('button[data-act="submit"]').onclick=()=>{
+      const fields={};el.querySelectorAll('input[data-field]').forEach(i=>fields[i.dataset.field]=i.value);
+      if(p.dataSource){
+        const ds=state.app.dataSources.find(d=>d.name===p.dataSource);
+        if(ds){
+          if(ds.type==='demo'){DEMO_DATA[ds.demo].push({id:Date.now(),...fields})}
+          else if(ds.type==='inline'){try{const arr=JSON.parse(ds.json||'[]');arr.push({id:Date.now(),...fields});ds.json=JSON.stringify(arr)}catch(e){}}
+          else if(ds.type==='fallbase'){fbWrite(ds.fallbase,fields)}
+          fmSignal('form-submit',{ds:p.dataSource,fields});
+          el.querySelectorAll('input[data-field]').forEach(i=>i.value='');
+          alert('saved');
+          renderPage();
+        }
+      }
+    };
+  }
+  if(w.type==='table'){
+    el.querySelectorAll('tr[data-row]').forEach(tr=>{
+      tr.style.cursor=p.rowAction!=='none'?'pointer':'';
+      tr.onclick=()=>{
+        const row=JSON.parse(tr.dataset.row);
+        if(p.rowAction==='navigate'&&p.rowTarget){gotoPage(p.rowTarget)}
+        else if(p.rowAction==='delete'){
+          const ds=state.app.dataSources.find(d=>d.name===p.dataSource);
+          if(ds&&ds.type==='demo'){const arr=DEMO_DATA[ds.demo];const i=arr.findIndex(r=>r.id===row.id);if(i>=0)arr.splice(i,1)}
+          renderPage();
+        }
+      };
+    });
+  }
+  if(w.type==='filter'){
+    el.querySelector('input').oninput=e=>{
+      const q=e.target.value.toLowerCase();
+      document.querySelectorAll('.widget tr[data-row]').forEach(tr=>{tr.style.display=tr.textContent.toLowerCase().includes(q)?'':'none'});
+    };
+  }
+}
+
+function runtimeAction(w){
+  const p=w.props;
+  if(p.action==='navigate'&&p.target)gotoPage(p.target);
+  else if(p.action==='custom'&&p.code){try{new Function('state',p.code)(state)}catch(e){alert('js error: '+e.message)}}
+  else if(p.action==='submit'){const f=document.querySelector('.widget button[data-act="submit"]');if(f)f.click()}
+}
+
+function gotoPage(name){
+  const i=state.app.pages.findIndex(p=>p.name===name||p.id===name);
+  if(i>=0){state.pageIdx=i;renderAll()}
+}
+
+// ---------- File menu ----------
+function toggleMenu(id){const m=document.getElementById(id);document.querySelectorAll('.menu.open').forEach(x=>{if(x.id!==id)x.classList.remove('open')});m.classList.toggle('open')}
+function closeMenus(){document.querySelectorAll('.menu.open').forEach(x=>x.classList.remove('open'))}
+document.addEventListener('click',e=>{if(!e.target.closest('.menu'))closeMenus()});
+
+function exportJSON(){
+  const blob=new Blob([JSON.stringify(state.app,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=(state.app.name||'app').replace(/\s+/g,'-')+'.json';a.click();
+}
+function importJSON(){
+  const inp=document.createElement('input');inp.type='file';inp.accept='application/json';
+  inp.onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{try{const a=JSON.parse(ev.target.result);state.app=a;state.app.id=a.id||'app_'+Date.now().toString(36);state.pageIdx=0;state.selectedId=null;document.getElementById('appName').value=a.name||'untitled';renderAll();markDirty()}catch(err){alert('invalid json')}};r.readAsText(f)};
+  inp.click();
+}
+
+// ---------- Open dialog ----------
+async function openOpen(){
+  const apps=await dbAll('apps');
+  const ul=document.getElementById('appList');ul.innerHTML='';
+  if(!apps.length){ul.innerHTML='<li>no saved apps yet</li>'}
+  else apps.sort((a,b)=>b.updatedAt-a.updatedAt).forEach(a=>{
+    const li=document.createElement('li');
+    li.innerHTML=`<span>${esc(a.name)}</span><small>${new Date(a.updatedAt).toLocaleString()}</small>`;
+    li.onclick=()=>{state.app=a;state.pageIdx=0;state.selectedId=null;document.getElementById('appName').value=a.name;renderAll();markSaved();closeOpen()};
+    ul.appendChild(li);
+  });
+  document.getElementById('openModal').classList.add('open');
+}
+function closeOpen(){document.getElementById('openModal').classList.remove('open')}
+
+// ---------- Settings ----------
+function openSettings(){
+  document.getElementById('sAnthropic').value=state.settings.anthropicKey||'';
+  document.getElementById('sOpenAI').value=state.settings.openaiKey||'';
+  document.getElementById('sGemini').value=state.settings.geminiKey||'';
+  document.getElementById('sOpenRouter').value=state.settings.openrouterKey||'';
+  document.getElementById('settingsModal').classList.add('open');
+}
+function closeSettings(){document.getElementById('settingsModal').classList.remove('open')}
+async function saveSettings(){
+  state.settings={
+    anthropicKey:document.getElementById('sAnthropic').value.trim(),
+    openaiKey:document.getElementById('sOpenAI').value.trim(),
+    geminiKey:document.getElementById('sGemini').value.trim(),
+    openrouterKey:document.getElementById('sOpenRouter').value.trim()
+  };
+  await dbPut('kv',{k:'settings',v:state.settings});
+  closeSettings();updateTierBadge();
+}
+
+// ---------- Data sources modal ----------
+function openDS(){renderDSList();document.getElementById('dsModal').classList.add('open')}
+function closeDS(){document.getElementById('dsModal').classList.remove('open')}
+function dsTypeChange(){
+  const t=document.getElementById('dsType').value;
+  document.getElementById('dsDemoRow').style.display=t==='demo'?'':'none';
+  document.getElementById('dsInlineRow').style.display=t==='inline'?'':'none';
+  document.getElementById('dsFallbaseRow').style.display=t==='fallbase'?'':'none';
+}
+function renderDSList(){
+  const c=document.getElementById('dsList');
+  if(!state.app.dataSources.length){c.innerHTML='<div style="color:var(--cream-muted);font-size:11px">no data sources yet</div>';return}
+  c.innerHTML=state.app.dataSources.map((d,i)=>`<div style="display:flex;justify-content:space-between;padding:6px;border:1px solid var(--line);border-radius:3px;margin-bottom:4px;font-size:11px"><span><b>${esc(d.name)}</b> · <span class="mono">${esc(d.type)}</span></span><button onclick="delDS(${i})">×</button></div>`).join('');
+}
+function delDS(i){state.app.dataSources.splice(i,1);markDirty();renderDSList();renderAll()}
+function addDS(){
+  const name=document.getElementById('dsName').value.trim();
+  if(!name)return alert('name required');
+  const t=document.getElementById('dsType').value;
+  const d={name,type:t};
+  if(t==='demo')d.demo=document.getElementById('dsDemo').value;
+  else if(t==='inline')d.json=document.getElementById('dsInline').value||'[]';
+  else if(t==='fallbase'){d.fallbase=document.getElementById('dsFallbase').value;d.cache=[];fbFetch(d)}
+  state.app.dataSources.push(d);markDirty();
+  document.getElementById('dsName').value='';
+  renderDSList();renderAll();
+}
+
+// ---------- Templates ----------
+function applyTemplate(name){
+  if(!confirm('Replace current app with template: '+name+'?'))return;
+  const t=buildTemplate(name);
+  state.app=t;state.pageIdx=0;state.selectedId=null;
+  document.getElementById('appName').value=t.name;
+  markDirty();renderAll();
+}
+function buildTemplate(name){
+  const base={id:'app_'+Date.now().toString(36),name:name.toLowerCase(),pages:[],dataSources:[],createdAt:Date.now(),updatedAt:Date.now()};
+  if(name==='CRUD app'){
+    base.dataSources=[{name:'customers',type:'demo',demo:'customers'}];
+    base.pages=[
+      {id:'p1',name:'list',widgets:[
+        mkW('text',20,20,500,40,{content:'# Customers'}),
+        mkW('button',20,70,140,36,{label:'+ New customer',action:'navigate',target:'new'}),
+        mkW('filter',180,70,200,36,{placeholder:'search…'}),
+        mkW('table',20,120,720,360,{dataSource:'customers',columns:'name,email,company,tier,value',sortable:true,rowAction:'navigate',rowTarget:'edit'})
+      ]},
+      {id:'p2',name:'new',widgets:[
+        mkW('text',20,20,500,40,{content:'# New customer'}),
+        mkW('form',20,70,400,320,{dataSource:'customers',title:'Add customer',submitLabel:'Save'}),
+        mkW('button',20,400,120,36,{label:'← back',action:'navigate',target:'list'})
+      ]},
+      {id:'p3',name:'edit',widgets:[
+        mkW('text',20,20,500,40,{content:'# Edit customer'}),
+        mkW('form',20,70,400,320,{dataSource:'customers',title:'Edit',submitLabel:'Update'}),
+        mkW('button',20,400,120,36,{label:'← back',action:'navigate',target:'list'})
+      ]}
+    ];
+  } else if(name==='Dashboard'){
+    base.dataSources=[{name:'orders',type:'demo',demo:'orders'},{name:'customers',type:'demo',demo:'customers'}];
+    base.pages=[{id:'p1',name:'dashboard',widgets:[
+      mkW('text',20,20,800,40,{content:'# Dashboard'}),
+      mkW('filter',20,70,300,36,{placeholder:'filter…'}),
+      mkW('chart',20,120,360,240,{dataSource:'orders',chartType:'bar',xField:'customer',yField:'total'}),
+      mkW('chart',400,120,360,240,{dataSource:'customers',chartType:'pie',xField:'tier',yField:'value'}),
+      mkW('chart',20,380,740,240,{dataSource:'orders',chartType:'line',xField:'date',yField:'total'})
+    ]}];
+  } else if(name==='Lead capture'){
+    base.dataSources=[{name:'leads',type:'inline',json:'[]'}];
+    base.pages=[
+      {id:'p1',name:'capture',widgets:[
+        mkW('text',20,20,500,80,{content:'# Get a demo\nLeave your details and we will be in touch.'}),
+        mkW('form',20,120,400,260,{dataSource:'leads',title:'Your details',submitLabel:'Request demo'})
+      ]},
+      {id:'p2',name:'success',widgets:[
+        mkW('text',20,20,500,120,{content:'# Thank you\nWe got your details.'})
+      ]}
+    ];
+  } else if(name==='Pricing calculator'){
+    base.dataSources=[{name:'quotes',type:'inline',json:'[]'}];
+    base.pages=[{id:'p1',name:'calc',widgets:[
+      mkW('text',20,20,600,80,{content:'# Pricing calculator'}),
+      mkW('form',20,120,400,260,{dataSource:'quotes',title:'Inputs',submitLabel:'Calculate'}),
+      mkW('text',440,120,300,140,{content:'## Result\nFill the form to calculate.'}),
+      mkW('button',20,400,200,40,{label:'custom calc',action:'custom',code:'alert("custom calc result: $" + Math.floor(Math.random()*1000))'})
+    ]}];
+  } else if(name==='Internal tool'){
+    base.dataSources=[{name:'customers',type:'demo',demo:'customers'},{name:'orders',type:'demo',demo:'orders'},{name:'products',type:'demo',demo:'products'}];
+    base.pages=[
+      {id:'p1',name:'customers',widgets:[
+        mkW('text',20,20,400,40,{content:'# Customers'}),
+        mkW('table',20,70,760,360,{dataSource:'customers',columns:'name,email,company,tier',sortable:true})
+      ]},
+      {id:'p2',name:'orders',widgets:[
+        mkW('text',20,20,400,40,{content:'# Orders'}),
+        mkW('table',20,70,760,360,{dataSource:'orders',sortable:true})
+      ]},
+      {id:'p3',name:'products',widgets:[
+        mkW('text',20,20,400,40,{content:'# Products'}),
+        mkW('table',20,70,760,360,{dataSource:'products',sortable:true})
+      ]}
+    ];
+  }
+  return base;
+}
+function mkW(type,x,y,w,h,props){return {id:'w_'+Math.random().toString(36).slice(2,9),type,x,y,w,h,props:Object.assign(JSON.parse(JSON.stringify(WIDGETS[type].defaultProps)),props||{})}}
+
+// ---------- Ω palette ----------
+const T0_KEYWORDS=[
+  {kw:/crud|list.*form|customer/i,name:'CRUD app'},
+  {kw:/dashboard|chart|metric/i,name:'Dashboard'},
+  {kw:/lead|signup|capture|contact/i,name:'Lead capture'},
+  {kw:/pric|calc|quote/i,name:'Pricing calculator'},
+  {kw:/internal|sidebar|tool|admin/i,name:'Internal tool'}
+];
+function openPalette(){document.getElementById('palette').classList.add('open');document.getElementById('pInput').focus();paletteRender('')}
+function closePalette(){document.getElementById('palette').classList.remove('open')}
+function paletteRender(q){
+  const body=document.getElementById('pBody');body.innerHTML='';
+  const tpls=['CRUD app','Dashboard','Lead capture','Pricing calculator','Internal tool'];
+  const matches=q?tpls.filter(t=>t.toLowerCase().includes(q.toLowerCase())):tpls;
+  matches.forEach(t=>{
+    const d=document.createElement('div');d.className='opt';
+    d.innerHTML=`<span>apply template: <b>${t}</b></span><small>T0</small>`;
+    d.onclick=()=>{applyTemplate(t);closePalette()};
+    body.appendChild(d);
+  });
+  if(q){
+    const d=document.createElement('div');d.className='opt';
+    d.innerHTML=`<span>generate app from prompt: <b>${esc(q)}</b></span><small id="pTierLine">T0</small>`;
+    d.onclick=()=>llmGenerate(q);
+    body.appendChild(d);
+  }
+}
+document.getElementById('pInput').addEventListener('input',e=>paletteRender(e.target.value));
+document.getElementById('pInput').addEventListener('keydown',e=>{
+  if(e.key==='Enter'){
+    const q=e.target.value.trim();if(!q)return;
+    for(const r of T0_KEYWORDS)if(r.kw.test(q)){applyTemplate(r.name);closePalette();return}
+    llmGenerate(q);
+  } else if(e.key==='Escape')closePalette();
+});
+
+async function llmGenerate(q){
+  const tier=await Cascade.detectTier();
+  document.getElementById('pTier').textContent=tier;
+  if(tier==='T0'){
+    // Keyword fallback
+    for(const r of T0_KEYWORDS)if(r.kw.test(q)){applyTemplate(r.name);closePalette();return}
+    alert('set an API key in settings for natural-language generation, or try: crud / dashboard / lead capture / pricing / internal tool');
+    return;
+  }
+  document.getElementById('pBody').innerHTML='<div class="opt"><span>generating…</span></div>';
+  const sys=`You are FallBuild's app planner. Return ONLY valid JSON matching this schema (no prose, no fences):
+{"name":"app name","pages":[{"name":"page name","widgets":[{"type":"text|form|table|chart|button|image|container|filter","x":0,"y":0,"w":300,"h":100,"props":{}}]}],"dataSources":[{"name":"customers","type":"demo","demo":"customers|orders|products"}]}
+Widget props: text:{content}; form:{dataSource,title,submitLabel}; table:{dataSource,columns,rowAction}; chart:{dataSource,chartType:"bar|line|pie",xField,yField}; button:{label,action:"navigate|submit|custom",target}; image:{src,alt}; container:{layout:"flex|grid"}; filter:{placeholder}. Layout in pixels on a 1200x800 canvas.`;
+  try{
+    const r=await Cascade.generate(sys,q,2000);
+    if(!r.text)throw new Error('no output');
+    let txt=r.text.trim().replace(/^```json\s*|```$/g,'').replace(/^```\s*|```$/g,'');
+    const m=txt.match(/\{[\s\S]*\}/);if(m)txt=m[0];
+    const app=JSON.parse(txt);
+    app.id='app_'+Date.now().toString(36);app.pages=app.pages||[];
+    app.pages.forEach(p=>{p.id=p.id||'p_'+Math.random().toString(36).slice(2,8);p.widgets=(p.widgets||[]).map(w=>Object.assign(mkW(w.type||'text',w.x||20,w.y||20,w.w||300,w.h||100,w.props||{})))});
+    app.dataSources=app.dataSources||[];
+    state.app=app;state.pageIdx=0;state.selectedId=null;
+    document.getElementById('appName').value=app.name||'generated';
+    closePalette();renderAll();markDirty();
+  }catch(e){
+    document.getElementById('pBody').innerHTML=`<div class="opt"><span style="color:var(--red)">generation failed: ${esc(e.message)}</span></div>`;
+  }
+}
+
+// ---------- FallBase / fallmesh ----------
+let fmChan=null;
+function fmInit(){try{fmChan=new BroadcastChannel('fall-signal');fmChan.postMessage({source:'fallbuild',type:'hello',prime:PRIME,version:VERSION,ts:Date.now()});fmChan.addEventListener('message',e=>{const m=e.data;if(m&&m.type==='ping')fmChan.postMessage({source:'fallbuild',type:'pong',prime:PRIME});if(m&&m.type==='fallbase-data'&&m.table){const ds=state.app&&state.app.dataSources.find(d=>d.type==='fallbase'&&d.fallbase===m.table);if(ds){ds.cache=m.rows||[];renderPage()}}})}catch(e){}}
+function fmSignal(type,extra){if(!fmChan)return;try{fmChan.postMessage({source:'fallbuild',type,prime:PRIME,ts:Date.now(),...extra})}catch(e){}}
+function fbFetch(ds){fmSignal('fallbase-request',{table:ds.fallbase});setTimeout(()=>{if(!ds.cache.length)ds.cache=DEMO_DATA.customers},800)}
+function fbWrite(table,row){fmSignal('fallbase-write',{table,row})}
+
+// ---------- Cascade (T0/T2/T3) ----------
+const Cascade={
+  async detectTier(){if(await this._probe())return'T2';const s=state.settings;if(s.anthropicKey||s.openaiKey||s.geminiKey||s.openrouterKey)return'T3';return'T0'},
+  async _probe(){if(this._p!==undefined)return this._p;try{this._p=await Promise.race([fetch('http://127.0.0.1:11434/api/tags').then(r=>r.ok),new Promise(r=>setTimeout(()=>r(false),350))])}catch(e){this._p=false}return this._p},
+  async generate(sys,user,maxTok){const s=state.settings,max=maxTok||1200;
+    if(s.anthropicKey)try{const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':s.anthropicKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-haiku-4-5',max_tokens:max,system:sys,messages:[{role:'user',content:user}]})});const d=await r.json();return{tier:'T3·Claude',text:d?.content?.[0]?.text||''}}catch(e){}
+    if(s.geminiKey)try{const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${s.geminiKey}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({systemInstruction:{parts:[{text:sys}]},contents:[{parts:[{text:user}]}]})});const d=await r.json();return{tier:'T3·Gemini',text:d?.candidates?.[0]?.content?.parts?.[0]?.text||''}}catch(e){}
+    if(s.openaiKey)try{const r=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+s.openaiKey},body:JSON.stringify({model:'gpt-4o-mini',messages:[{role:'system',content:sys},{role:'user',content:user}]})});const d=await r.json();return{tier:'T3·GPT',text:d?.choices?.[0]?.message?.content||''}}catch(e){}
+    if(s.openrouterKey)try{const r=await fetch('https://openrouter.ai/api/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+s.openrouterKey,'HTTP-Referer':location.origin},body:JSON.stringify({model:'anthropic/claude-haiku-4-5',messages:[{role:'system',content:sys},{role:'user',content:user}]})});const d=await r.json();return{tier:'T3·OpenRouter',text:d?.choices?.[0]?.message?.content||''}}catch(e){}
+    return{tier:'T0',text:null}
+  }
+};
+async function updateTierBadge(){const t=await Cascade.detectTier();const el=document.getElementById('tierBadge');if(el){el.textContent=t==='T0'?'offline':t;el.classList.toggle('t3',t!=='T0')}const p=document.getElementById('pTier');if(p)p.textContent=t}
+
+// ---------- Standalone export ----------
+const RUNTIME_SRC=`
+'use strict';
+(function(){
+const APP=window.__FALLBUILD_APP__;
+const DS_DATA=window.__FALLBUILD_DATA__||{};
+const PRIME=547;
+window.KONOMI={active:true,tier:'sovereign',prime:PRIME,inherits:APP.prime||null,check:()=>({ok:true,tier:'sovereign'})};
+try{const sig=new BroadcastChannel('fall-signal');sig.postMessage({source:'fallbuild-app',type:'hello',prime:PRIME,name:APP.name,ts:Date.now()});sig.addEventListener('message',e=>{const m=e.data;if(m&&m.type==='fallbase-data'&&m.table){const ds=APP.dataSources.find(d=>d.type==='fallbase'&&d.fallbase===m.table);if(ds){DS_DATA[ds.name]=m.rows||[];render()}}});window.__SIG=sig}catch(e){}
+let pageIdx=0;
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c])}
+function mdToHtml(s){s=esc(s);s=s.replace(/^### (.+)$/gm,'<h3>$1</h3>').replace(/^## (.+)$/gm,'<h2>$1</h2>').replace(/^# (.+)$/gm,'<h1>$1</h1>').replace(/\\*\\*(.+?)\\*\\*/g,'<strong>$1</strong>').replace(/\\*(.+?)\\*/g,'<em>$1</em>');return s.split(/\\n\\n+/).map(p=>/^<h\\d/.test(p)?p:'<p>'+p.replace(/\\n/g,'<br>')+'</p>').join('')}
+function getRows(name){if(!name)return [];if(DS_DATA[name])return DS_DATA[name];const ds=APP.dataSources.find(d=>d.name===name);if(!ds)return [];if(ds.type==='inline'){try{return JSON.parse(ds.json||'[]')}catch(e){return[]}}if(ds.type==='fallbase'){try{window.__SIG&&window.__SIG.postMessage({source:'fallbuild-app',type:'fallbase-request',table:ds.fallbase})}catch(e){}return ds.cache||[]}return []}
+function render(){
+  const root=document.getElementById('app');root.innerHTML='';
+  const page=APP.pages[pageIdx];if(!page){root.innerHTML='<p>page not found</p>';return}
+  if(APP.pages.length>1){const nav=document.createElement('nav');nav.className='fb-nav';APP.pages.forEach((p,i)=>{const a=document.createElement('a');a.textContent=p.name;a.className=i===pageIdx?'on':'';a.onclick=()=>{pageIdx=i;render()};nav.appendChild(a)});root.appendChild(nav)}
+  const surface=document.createElement('div');surface.className='fb-surface';root.appendChild(surface);
+  page.widgets.forEach(w=>{
+    const el=document.createElement('div');el.className='fb-widget fb-'+w.type;
+    el.style.cssText='position:absolute;left:'+w.x+'px;top:'+w.y+'px;width:'+w.w+'px;height:'+w.h+'px';
+    surface.appendChild(el);bind(el,w);
+  });
+}
+function bind(el,w){
+  const p=w.props||{};
+  if(w.type==='text'){el.innerHTML=mdToHtml(p.content||'')}
+  else if(w.type==='form'){
+    const rows=getRows(p.dataSource),keys=rows.length?Object.keys(rows[0]).filter(k=>k!=='id'):['field1','field2'];
+    el.innerHTML='<h3>'+esc(p.title||'Form')+'</h3>'+keys.map(k=>'<label>'+esc(k)+'<input data-f="'+esc(k)+'"></label>').join('')+'<button class="fb-btn">'+esc(p.submitLabel||'Save')+'</button>';
+    el.querySelector('button').onclick=()=>{const obj={};el.querySelectorAll('input[data-f]').forEach(i=>obj[i.dataset.f]=i.value);if(p.dataSource){const ds=APP.dataSources.find(d=>d.name===p.dataSource);if(ds&&ds.type==='fallbase'){try{window.__SIG&&window.__SIG.postMessage({source:'fallbuild-app',type:'fallbase-write',table:ds.fallbase,row:obj})}catch(e){}}else if(ds&&ds.type==='inline'){try{const arr=JSON.parse(ds.json||'[]');arr.push({id:Date.now(),...obj});ds.json=JSON.stringify(arr);DS_DATA[ds.name]=arr}catch(e){}}else{if(!DS_DATA[p.dataSource])DS_DATA[p.dataSource]=getRows(p.dataSource).slice();DS_DATA[p.dataSource].push({id:Date.now(),...obj})}}el.querySelectorAll('input').forEach(i=>i.value='');alert('saved');render()};
+  } else if(w.type==='table'){
+    const rows=getRows(p.dataSource);if(!rows.length){el.innerHTML='<em>no data</em>';return}
+    const cols=(p.columns||'').split(',').map(s=>s.trim()).filter(Boolean);
+    const keys=cols.length?cols:Object.keys(rows[0]);
+    let h='<table><thead><tr>'+keys.map(k=>'<th>'+esc(k)+'</th>').join('')+'</tr></thead><tbody>';
+    rows.forEach((r,i)=>{h+='<tr data-i="'+i+'">'+keys.map(k=>'<td>'+esc(r[k]??'')+'</td>').join('')+'</tr>'});
+    h+='</tbody></table>';el.innerHTML=h;
+    if(p.rowAction!=='none')el.querySelectorAll('tr[data-i]').forEach(tr=>{tr.style.cursor='pointer';tr.onclick=()=>{if(p.rowAction==='navigate'&&p.rowTarget){const i=APP.pages.findIndex(pg=>pg.name===p.rowTarget);if(i>=0){pageIdx=i;render()}}}});
+  } else if(w.type==='chart'){
+    el.innerHTML='<canvas></canvas>';drawChart(el.querySelector('canvas'),w);
+  } else if(w.type==='button'){
+    el.innerHTML='<button class="fb-btn" style="width:100%;height:100%">'+esc(p.label||'Button')+'</button>';
+    el.querySelector('button').onclick=()=>{if(p.action==='navigate'&&p.target){const i=APP.pages.findIndex(pg=>pg.name===p.target||pg.id===p.target);if(i>=0){pageIdx=i;render()}}else if(p.action==='custom'&&p.code){try{new Function(p.code)()}catch(e){alert(e.message)}}};
+  } else if(w.type==='image'){el.innerHTML=p.src?'<img src="'+p.src+'" alt="'+esc(p.alt||'')+'" style="width:100%;height:100%;object-fit:cover">':'<em>image</em>'}
+  else if(w.type==='container'){el.innerHTML='<div style="display:'+(p.layout==='grid'?'grid':'flex')+';gap:8px;width:100%;height:100%"></div>'}
+  else if(w.type==='filter'){el.innerHTML='<input placeholder="'+esc(p.placeholder||'search')+'" style="width:100%">';el.querySelector('input').oninput=e=>{const q=e.target.value.toLowerCase();document.querySelectorAll('.fb-table tr[data-i]').forEach(tr=>{tr.style.display=tr.textContent.toLowerCase().includes(q)?'':'none'})}}
+}
+function drawChart(cv,w){const rows=getRows(w.props.dataSource);if(!rows.length)return;const xF=w.props.xField||Object.keys(rows[0])[0];const yF=w.props.yField||Object.keys(rows[0]).find(k=>typeof rows[0][k]==='number')||Object.keys(rows[0])[1];const dpr=window.devicePixelRatio||1;const W=cv.clientWidth,H=cv.clientHeight;cv.width=W*dpr;cv.height=H*dpr;const ctx=cv.getContext('2d');ctx.scale(dpr,dpr);const data=rows.map(r=>({x:String(r[xF]),y:Number(r[yF])||0}));const max=Math.max(...data.map(d=>d.y),1);const pad=24,cw=W-pad*2,ch=H-pad*2;ctx.strokeStyle='#2a2934';ctx.beginPath();ctx.moveTo(pad,pad);ctx.lineTo(pad,H-pad);ctx.lineTo(W-pad,H-pad);ctx.stroke();if(w.props.chartType==='bar'){const bw=cw/data.length*.7,gap=cw/data.length*.3;data.forEach((d,i)=>{const x=pad+i*(bw+gap)+gap/2,bh=d.y/max*ch,y=H-pad-bh;ctx.fillStyle='#b8974a';ctx.fillRect(x,y,bw,bh);ctx.fillStyle='#a8a395';ctx.font='9px sans-serif';ctx.textAlign='center';ctx.fillText(d.x.slice(0,8),x+bw/2,H-pad+10)})}else if(w.props.chartType==='line'){ctx.strokeStyle='#ff8c00';ctx.lineWidth=2;ctx.beginPath();data.forEach((d,i)=>{const x=pad+i*(cw/(data.length-1||1)),y=H-pad-d.y/max*ch;if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y)});ctx.stroke()}else if(w.props.chartType==='pie'){const total=data.reduce((a,d)=>a+d.y,0)||1;const cx=W/2,cy=H/2,r=Math.min(W,H)/2-pad;let a=-Math.PI/2;const cols=['#b8974a','#ff8c00','#8b1a1a','#4ade80','#60a5fa','#fbbf24'];data.forEach((d,i)=>{const a2=a+d.y/total*Math.PI*2;ctx.fillStyle=cols[i%cols.length];ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,r,a,a2);ctx.closePath();ctx.fill();a=a2})}}
+window.addEventListener('message',async e=>{const m=e.data;if(!m||m.target!=='fallbuild-app'||!m.action)return;let r=null;if(m.action==='ping')r={ok:true,prime:PRIME,name:APP.name};e.source&&e.source.postMessage({target:m.source||'*',responseTo:m.action,data:r},'*')});
+render();
+})();
+`;
+
+function exportStandalone(){
+  if(!state.app)return;
+  // Bake data
+  const dataBaked={};
+  state.app.dataSources.forEach(ds=>{
+    if(ds.type==='demo')dataBaked[ds.name]=DEMO_DATA[ds.demo]||[];
+  });
+  const appJson=JSON.parse(JSON.stringify(state.app));
+  const html=`<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${esc(state.app.name||'app')}</title>
+<style>
+:root{--void:#0b0a0f;--ink:#1a1922;--line:#2a2934;--cream:#e6e1d6;--brass:#b8974a;--amber:#ff8c00}
+*{box-sizing:border-box}
+body{margin:0;background:var(--void);color:var(--cream);font-family:system-ui,sans-serif;font-size:14px}
+#app{position:relative;min-height:100vh;padding:0}
+.fb-nav{display:flex;gap:6px;padding:10px 16px;border-bottom:1px solid var(--line);background:#13121a}
+.fb-nav a{padding:6px 12px;border:1px solid var(--line);border-radius:3px;cursor:pointer;font-size:12px}
+.fb-nav a.on{background:var(--brass);color:var(--void);border-color:var(--brass)}
+.fb-surface{position:relative;min-height:80vh}
+.fb-widget{padding:8px;overflow:hidden}
+.fb-widget h1,h2,h3{font-family:Georgia,serif;margin:0 0 6px;color:var(--cream)}
+.fb-widget label{display:block;font-size:11px;color:#a8a395;text-transform:uppercase;margin-bottom:6px}
+.fb-widget input{display:block;width:100%;background:var(--ink);border:1px solid var(--line);color:var(--cream);padding:6px 8px;border-radius:3px;margin-top:3px}
+.fb-btn{background:var(--brass);color:var(--void);border:none;padding:8px 14px;border-radius:3px;cursor:pointer;font-weight:600}
+.fb-btn:hover{background:var(--amber)}
+.fb-table table{width:100%;border-collapse:collapse;font-size:12px}
+.fb-table th,.fb-table td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left}
+.fb-table th{color:#a8a395;text-transform:uppercase;font-size:10px}
+canvas{display:block;width:100%;height:100%}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+window.__FALLBUILD_APP__=${JSON.stringify(appJson)};
+window.__FALLBUILD_DATA__=${JSON.stringify(dataBaked)};
+${RUNTIME_SRC}
+<\/script>
+</body>
+</html>`;
+  const blob=new Blob([html],{type:'text/html'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=(state.app.name||'app').replace(/\s+/g,'-')+'.html';a.click();
+  fmSignal('app-export',{name:state.app.name,size:html.length});
+}
+
+// ---------- Init ----------
+document.getElementById('appName').addEventListener('input',e=>{state.app.name=e.target.value;markDirty();updateStat()});
+document.getElementById('snapGrid').addEventListener('change',e=>{canvas.classList.toggle('grid',e.target.checked)});
+
+document.addEventListener('keydown',e=>{
+  if((e.ctrlKey||e.metaKey)&&e.key==='k'){e.preventDefault();openPalette()}
+  else if((e.ctrlKey||e.metaKey)&&e.key==='s'){e.preventDefault();saveApp()}
+  else if(e.key==='Escape'){closePalette();closeSettings();closeOpen();closeDS()}
+  else if(e.key==='Delete'&&state.selectedId&&!e.target.matches('input,textarea,select'))delWidget();
+});
+
+// KONOMI · fallmesh · postMessage (sovereign)
+window.KONOMI={active:true,tier:'sovereign',prime:PRIME,check:()=>({ok:true,tier:'sovereign'})};
+window.addEventListener('message',async e=>{
+  const m=e.data;if(!m||m.target!=='fallbuild'||!m.action)return;
+  let r=null;
+  if(m.action==='ping')r={ok:true,prime:PRIME,version:VERSION};
+  else if(m.action==='open-app'&&m.appJson){try{state.app=m.appJson;state.app.id=state.app.id||'app_'+Date.now().toString(36);state.pageIdx=0;state.selectedId=null;document.getElementById('appName').value=state.app.name||'imported';renderAll();markDirty();r={ok:true}}catch(err){r={ok:false,error:err.message}}}
+  e.source&&e.source.postMessage({target:m.source||'*',responseTo:m.action,data:r},'*');
+});
+
+(async function init(){
+  await openDB();
+  const s=await dbGet('kv','settings');if(s&&s.v)state.settings=s.v;
+  fmInit();
+  await loadLast();
+  updateTierBadge();
+})();
+</script>
+</body>
+</html>
