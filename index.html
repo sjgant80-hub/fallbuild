@@ -196,22 +196,19 @@ body.preview .widget.selected{box-shadow:none}
     'llama-3b':  { id: 'Llama-3.2-3B-Instruct-q4f16_1-MLC',   size: '~2GB',   label: '3B · balanced · default · most laptops' },
     'qwen-7b':   { id: 'Qwen2.5-7B-Instruct-q4f16_1-MLC',     size: '~5GB',   label: '7B · capable · needs decent GPU (M-series Mac / 8GB+ VRAM)' },
     'llama-8b':  { id: 'Llama-3.1-8B-Instruct-q4f16_1-MLC',   size: '~5GB',   label: '8B · common · needs decent GPU' },
-    'llama-70b': { id: 'Llama-3.1-70B-Instruct-q4f16_1-MLC',  size: '~40GB',  label: '70B · frontier · needs serious GPU + 64GB+ RAM' },
-  };
+    'llama-70b': { id: 'Llama-3.1-70B-Instruct-q4f16_1-MLC',  size: '~40GB',  label: '70B · frontier · needs serious GPU + 64GB+ RAM' }};
   const DEFAULT_MODEL = 'llama-3b';
 
   const T3_PROVIDERS = {
     anthropic: { label: 'Anthropic Claude', models: ['claude-sonnet-4-5','claude-opus-4-7','claude-haiku-4-5'], default: 'claude-sonnet-4-5', url: 'https://api.anthropic.com/v1/messages' },
     openai:    { label: 'OpenAI',           models: ['gpt-4o','gpt-4o-mini','o1-mini'],                          default: 'gpt-4o-mini',      url: 'https://api.openai.com/v1/chat/completions' },
-    google:    { label: 'Google Gemini',    models: ['gemini-1.5-pro','gemini-1.5-flash','gemini-2.0-flash-exp'], default: 'gemini-1.5-flash', url: 'https://generativelanguage.googleapis.com/v1beta/models/' },
-  };
+    google:    { label: 'Google Gemini',    models: ['gemini-1.5-pro','gemini-1.5-flash','gemini-2.0-flash-exp'], default: 'gemini-1.5-flash', url: 'https://generativelanguage.googleapis.com/v1beta/models/' }};
 
   // ─── State ───────────────────────────────────────────────────────
   const STATE = {
     config: loadConfig(),
     ai: { ready: false, loading: false, progress: 0, engine: null, model: null },
-    mesh: { active: false, peers: new Map(), bc: null, signal: null },
-  };
+    mesh: { active: false, peers: new Map(), bc: null, signal: null }};
 
   function loadConfig() {
     try { return JSON.parse(localStorage.getItem('fall-kit.config') || '{}'); }
@@ -278,8 +275,7 @@ body.preview .widget.selected{box-shadow:none}
     if (tier === 'T2' && STATE.ai.ready && STATE.ai.engine) {
       const r = await STATE.ai.engine.chat.completions.create({
         messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: userMsg }],
-        max_tokens: maxTokens,
-      });
+        max_tokens: maxTokens});
       return r.choices[0].message.content;
     }
     if (tier === 'T3' && STATE.config.api_key && STATE.config.api_provider) {
@@ -296,8 +292,7 @@ body.preview .widget.selected{box-shadow:none}
       const r = await fetch(T3_PROVIDERS.anthropic.url, {
         method: 'POST',
         headers: { 'content-type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01' },
-        body: JSON.stringify({ model, max_tokens: maxTokens, system: sys, messages: [{ role: 'user', content: msg }] }),
-      });
+        body: JSON.stringify({ model, max_tokens: maxTokens, system: sys, messages: [{ role: 'user', content: msg }] })});
       if (!r.ok) throw new Error('Anthropic ' + r.status + ': ' + (await r.text()).slice(0, 200));
       const j = await r.json();
       return j.content[0].text;
@@ -306,8 +301,7 @@ body.preview .widget.selected{box-shadow:none}
       const r = await fetch(T3_PROVIDERS.openai.url, {
         method: 'POST',
         headers: { 'content-type': 'application/json', 'Authorization': 'Bearer ' + key },
-        body: JSON.stringify({ model, max_tokens: maxTokens, messages: [{ role: 'system', content: sys }, { role: 'user', content: msg }] }),
-      });
+        body: JSON.stringify({ model, max_tokens: maxTokens, messages: [{ role: 'system', content: sys }, { role: 'user', content: msg }] })});
       if (!r.ok) throw new Error('OpenAI ' + r.status);
       const j = await r.json();
       return j.choices[0].message.content;
@@ -316,8 +310,7 @@ body.preview .widget.selected{box-shadow:none}
       const r = await fetch(T3_PROVIDERS.google.url + model + ':generateContent?key=' + encodeURIComponent(key), {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: sys + '\n\n---\n\n' + msg }] }], generationConfig: { maxOutputTokens: maxTokens } }),
-      });
+        body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: sys + '\n\n---\n\n' + msg }] }], generationConfig: { maxOutputTokens: maxTokens } })});
       if (!r.ok) throw new Error('Google ' + r.status);
       const j = await r.json();
       return j.candidates[0].content.parts[0].text;
@@ -558,8 +551,7 @@ body.preview .widget.selected{box-shadow:none}
     openMint: openMint,  // v1.2 · launch kcc-mint with this seed prefilled as parent
     MODELS: WEBLLM_MODELS,
     PROVIDERS: T3_PROVIDERS,
-    state: STATE,
-  };
+    state: STATE};
 })(typeof window !== 'undefined' ? window : globalThis);
 
 </script>
@@ -826,7 +818,7 @@ function renderWidgetTiles(){
 }
 
 function renderTemplates(){
-  const tpls=['CRUD app','Dashboard','Lead capture','Pricing calculator','Internal tool'];
+  const tpls=['CRUD app','Dashboard','Lead capture','Access calculator','Internal tool'];
   const c=document.getElementById('tmplTiles');c.innerHTML='';
   for(const name of tpls){
     const d=document.createElement('div');
@@ -936,12 +928,12 @@ function getDSData(name){
 // ---------- Markdown (tiny subset) ----------
 function mdToHtml(s){
   s=esc(s);
-  s=s.replace(/^### (.+)$/gm,'<h3>$1</h3>');
-  s=s.replace(/^## (.+)$/gm,'<h2>$1</h2>');
-  s=s.replace(/^# (.+)$/gm,'<h1>$1</h1>');
-  s=s.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
-  s=s.replace(/\*(.+?)\*/g,'<em>$1</em>');
-  s=s.replace(/`(.+?)`/g,'<code>$1</code>');
+  s=s.replace(/^### (.+)$/gm,'<h3>TBA</h3>');
+  s=s.replace(/^## (.+)$/gm,'<h2>TBA</h2>');
+  s=s.replace(/^# (.+)$/gm,'<h1>TBA</h1>');
+  s=s.replace(/\*\*(.+?)\*\*/g,'<strong>TBA</strong>');
+  s=s.replace(/\*(.+?)\*/g,'<em>TBA</em>');
+  s=s.replace(/`(.+?)`/g,'<code>TBA</code>');
   s=s.split(/\n\n+/).map(p=>/^<h\d/.test(p)?p:'<p>'+p.replace(/\n/g,'<br>')+'</p>').join('');
   return s;
 }
@@ -1287,10 +1279,10 @@ function buildTemplate(name){
         mkW('text',20,20,500,120,{content:'# Thank you\nWe got your details.'})
       ]}
     ];
-  } else if(name==='Pricing calculator'){
+  } else if(name==='Access calculator'){
     base.dataSources=[{name:'quotes',type:'inline',json:'[]'}];
     base.pages=[{id:'p1',name:'calc',widgets:[
-      mkW('text',20,20,600,80,{content:'# Pricing calculator'}),
+      mkW('text',20,20,600,80,{content:'# Access calculator'}),
       mkW('form',20,120,400,260,{dataSource:'quotes',title:'Inputs',submitLabel:'Calculate'}),
       mkW('text',440,120,300,140,{content:'## Result\nFill the form to calculate.'}),
       mkW('button',20,400,200,40,{label:'custom calc',action:'custom',code:'alert("custom calc result: $" + Math.floor(Math.random()*1000))'})
@@ -1321,14 +1313,14 @@ const T0_KEYWORDS=[
   {kw:/crud|list.*form|customer/i,name:'CRUD app'},
   {kw:/dashboard|chart|metric/i,name:'Dashboard'},
   {kw:/lead|signup|capture|contact/i,name:'Lead capture'},
-  {kw:/pric|calc|quote/i,name:'Pricing calculator'},
+  {kw:/pric|calc|quote/i,name:'Access calculator'},
   {kw:/internal|sidebar|tool|admin/i,name:'Internal tool'}
 ];
 function openPalette(){document.getElementById('palette').classList.add('open');document.getElementById('pInput').focus();paletteRender('')}
 function closePalette(){document.getElementById('palette').classList.remove('open')}
 function paletteRender(q){
   const body=document.getElementById('pBody');body.innerHTML='';
-  const tpls=['CRUD app','Dashboard','Lead capture','Pricing calculator','Internal tool'];
+  const tpls=['CRUD app','Dashboard','Lead capture','Access calculator','Internal tool'];
   const matches=q?tpls.filter(t=>t.toLowerCase().includes(q.toLowerCase())):tpls;
   matches.forEach(t=>{
     const d=document.createElement('div');d.className='opt';
@@ -1414,7 +1406,7 @@ window.KONOMI={active:true,tier:'sovereign',prime:PRIME,inherits:APP.prime||null
 try{const sig=new BroadcastChannel('fall-signal');sig.postMessage({source:'fallbuild-app',type:'hello',prime:PRIME,name:APP.name,ts:Date.now()});sig.addEventListener('message',e=>{const m=e.data;if(m&&m.type==='fallbase-data'&&m.table){const ds=APP.dataSources.find(d=>d.type==='fallbase'&&d.fallbase===m.table);if(ds){DS_DATA[ds.name]=m.rows||[];render()}}});window.__SIG=sig}catch(e){}
 let pageIdx=0;
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c])}
-function mdToHtml(s){s=esc(s);s=s.replace(/^### (.+)$/gm,'<h3>$1</h3>').replace(/^## (.+)$/gm,'<h2>$1</h2>').replace(/^# (.+)$/gm,'<h1>$1</h1>').replace(/\\*\\*(.+?)\\*\\*/g,'<strong>$1</strong>').replace(/\\*(.+?)\\*/g,'<em>$1</em>');return s.split(/\\n\\n+/).map(p=>/^<h\\d/.test(p)?p:'<p>'+p.replace(/\\n/g,'<br>')+'</p>').join('')}
+function mdToHtml(s){s=esc(s);s=s.replace(/^### (.+)$/gm,'<h3>TBA</h3>').replace(/^## (.+)$/gm,'<h2>TBA</h2>').replace(/^# (.+)$/gm,'<h1>TBA</h1>').replace(/\\*\\*(.+?)\\*\\*/g,'<strong>TBA</strong>').replace(/\\*(.+?)\\*/g,'<em>TBA</em>');return s.split(/\\n\\n+/).map(p=>/^<h\\d/.test(p)?p:'<p>'+p.replace(/\\n/g,'<br>')+'</p>').join('')}
 function getRows(name){if(!name)return [];if(DS_DATA[name])return DS_DATA[name];const ds=APP.dataSources.find(d=>d.name===name);if(!ds)return [];if(ds.type==='inline'){try{return JSON.parse(ds.json||'[]')}catch(e){return[]}}if(ds.type==='fallbase'){try{window.__SIG&&window.__SIG.postMessage({source:'fallbuild-app',type:'fallbase-request',table:ds.fallbase})}catch(e){}return ds.cache||[]}return []}
 function render(){
   const root=document.getElementById('app');root.innerHTML='';
