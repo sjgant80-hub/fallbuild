@@ -1,0 +1,29 @@
+{
+  "kind": "kard.v1",
+  "name": "fallbuild",
+  "title": "FallBuild",
+  "retires": "a low-code app builder",
+  "category": "Office, notes and design",
+  "license": "MIT",
+  "live": "https://sjgant80-hub.github.io/fallbuild/",
+  "repo": "https://github.com/sjgant80-hub/fallbuild",
+  "studs": {
+    "brain": {
+      "how": "inline",
+      "version": "3.1.0"
+    },
+    "mesh": {
+      "device": true,
+      "peer": false
+    },
+    "memory": {
+      "indexeddb": true,
+      "localstorage": false
+    },
+    "proof": {
+      "workflows": 0,
+      "tests": 0
+    }
+  },
+  "fits": false
+}
