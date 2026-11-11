@@ -4,7 +4,7 @@
 
 The sovereign Oracle APEX wedge — a drag-drop low-code app builder in one HTML file.
 
-Part of the **TemuOracle suite** · prime 547 · MIT · ◊·κ=1
+Part of the **TemuOracle suite** · MIT
 
 ---
 
@@ -89,4 +89,4 @@ Every wedge: one HTML file · file:// sovereign · MIT · estate dark palette ·
 
 ### Licence
 
-MIT. ◊·κ=1 is the only seal.
+MIT.
