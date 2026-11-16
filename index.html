@@ -1508,12 +1508,12 @@ function getDSData(name){
 // ---------- Markdown (tiny subset) ----------
 function mdToHtml(s){
   s=esc(s);
-  s=s.replace(/^### (.+)$/gm,'<h3>TBA</h3>');
-  s=s.replace(/^## (.+)$/gm,'<h2>TBA</h2>');
-  s=s.replace(/^# (.+)$/gm,'<h1>TBA</h1>');
-  s=s.replace(/\*\*(.+?)\*\*/g,'<strong>TBA</strong>');
-  s=s.replace(/\*(.+?)\*/g,'<em>TBA</em>');
-  s=s.replace(/`(.+?)`/g,'<code>TBA</code>');
+  s=s.replace(/^### (.+)$/gm,'<h3>$1</h3>');
+  s=s.replace(/^## (.+)$/gm,'<h2>$1</h2>');
+  s=s.replace(/^# (.+)$/gm,'<h1>$1</h1>');
+  s=s.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
+  s=s.replace(/\*(.+?)\*/g,'<em>$1</em>');
+  s=s.replace(/`(.+?)`/g,'<code>$1</code>');
   s=s.split(/\n\n+/).map(p=>/^<h\d/.test(p)?p:'<p>'+p.replace(/\n/g,'<br>')+'</p>').join('');
   return s;
 }
@@ -1986,7 +1986,7 @@ window.KONOMI={active:true,tier:'sovereign',prime:PRIME,inherits:APP.prime||null
 try{const sig=new BroadcastChannel('fall-signal');sig.postMessage({source:'fallbuild-app',type:'hello',prime:PRIME,name:APP.name,ts:Date.now()});sig.addEventListener('message',e=>{const m=e.data;if(m&&m.type==='fallbase-data'&&m.table){const ds=APP.dataSources.find(d=>d.type==='fallbase'&&d.fallbase===m.table);if(ds){DS_DATA[ds.name]=m.rows||[];render()}}});window.__SIG=sig}catch(e){}
 let pageIdx=0;
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c])}
-function mdToHtml(s){s=esc(s);s=s.replace(/^### (.+)$/gm,'<h3>TBA</h3>').replace(/^## (.+)$/gm,'<h2>TBA</h2>').replace(/^# (.+)$/gm,'<h1>TBA</h1>').replace(/\\*\\*(.+?)\\*\\*/g,'<strong>TBA</strong>').replace(/\\*(.+?)\\*/g,'<em>TBA</em>');return s.split(/\\n\\n+/).map(p=>/^<h\\d/.test(p)?p:'<p>'+p.replace(/\\n/g,'<br>')+'</p>').join('')}
+function mdToHtml(s){s=esc(s);s=s.replace(/^### (.+)$/gm,'<h3>$1</h3>').replace(/^## (.+)$/gm,'<h2>$1</h2>').replace(/^# (.+)$/gm,'<h1>$1</h1>').replace(/\\*\\*(.+?)\\*\\*/g,'<strong>$1</strong>').replace(/\\*(.+?)\\*/g,'<em>$1</em>');return s.split(/\\n\\n+/).map(p=>/^<h\\d/.test(p)?p:'<p>'+p.replace(/\\n/g,'<br>')+'</p>').join('')}
 function getRows(name){if(!name)return [];if(DS_DATA[name])return DS_DATA[name];const ds=APP.dataSources.find(d=>d.name===name);if(!ds)return [];if(ds.type==='inline'){try{return JSON.parse(ds.json||'[]')}catch(e){return[]}}if(ds.type==='fallbase'){try{window.__SIG&&window.__SIG.postMessage({source:'fallbuild-app',type:'fallbase-request',table:ds.fallbase})}catch(e){}return ds.cache||[]}return []}
 function render(){
   const root=document.getElementById('app');root.innerHTML='';
